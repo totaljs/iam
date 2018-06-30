@@ -1,0 +1,47 @@
+<div data-jc="form__common.form__if:user;width:500;icon:user;submit:usersform/submit;reload:usersform/reload" class="hidden">
+	<div data-jc-scope="users.form">
+		<div class="padding">
+			<div data-jc="textbox__name__required:true;maxlength:50" class="m">User name</div>
+			<br />
+			<div data-jc="error__response"></div>
+		</div>
+	</div>
+	<div class="ui-form-buttons" data-jc="validation__users.form">
+		<button name="submit" disabled="disabled">SUBMIT</button>
+		<button name="cancel">Cancel</button>
+	</div>
+</div>
+
+<script>
+
+	PLUGIN('usersform', function(exports) {
+
+		exports.reload = function(com) {
+			com.reconfigure('title:' + (users.form.id ? 'Edit user' : 'Add user'));
+		};
+
+		exports.submit = function(com) {
+
+			// Reset form
+			RESET('users.form.*');
+
+			SETTER('loading', 'show');
+
+			AJAX('POST /api/users/ REPEAT', users.form, function(response) {
+
+				SETTER('loading', 'hide', 1000);
+
+				// Error processing
+				SET('users.form.response', response);
+
+				if (response.success) {
+					// Refresh data in grid
+					EXEC('users/refresh');
+					com.hide();
+				}
+
+			});
+		};
+	});
+
+</script>

@@ -1,0 +1,12 @@
+name                            : Total.js
+author                          : You company name
+version                         : 1.0.0
+
+database                        : YOUR-CONNECTION-STRING
+
+// Mail settings
+mail-smtp                       : smtp.yourwebsite.com
+mail-smtp-options               : {"secure":false,"port":25,"user":"","password":"","timeout":10000}
+mail-address-from               : your@yourwebsite.com
+mail-address-reply              : your@yourwebsite.com
+mail-address-copy               :

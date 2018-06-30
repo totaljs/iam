@@ -1,0 +1,58 @@
+@{layout('')}
+@{title('SPA example')}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=10" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="robots" content="all,follow" />
+	<link rel="stylesheet" href="//cdn.componentator.com/spa.min@15.css" />
+	<script src="//cdn.componentator.com/spa.min@15.js"></script>
+	@{import('meta', 'head', 'default.css', 'default.js', 'favicon.ico')}
+</head>
+<body data-jc="exec">
+
+	<div data-jc="LAZY loading" class="hidden"></div>
+	<div data-jc="LAZY calendar"></div>
+	<div data-jc="LAZY confirm"></div>
+	<div data-jc="LAZY message"></div>
+
+	<div class="container">
+
+		<nav>
+			<a href="/" class="R">Dashboard</a>
+			<a href="/users/" class="R">Users</a>
+			<a href="/products/" class="R">Products</a>
+		</nav>
+
+		<div data-jc="part__common.page__if:dashboard;url:/pages/dashboard.html;reload:dashboard/refresh"></div>
+		<div data-jc="part__common.page__if:users;url:/pages/users.html;reload:users/refresh"></div>
+		<div data-jc="part__common.page__if:products;url:/pages/products.html;reload:products/refresh"></div>
+
+	</div>
+
+	<script>
+
+		NAV.clientside('.R');
+
+		var common = {};
+
+		ROUTE('/', function() {
+			SET('common.page', 'dashboard');
+		});
+
+		ROUTE('/users/', function() {
+			SET('common.page', 'users');
+		});
+
+		ROUTE('/products/', function() {
+			SET('common.page', 'products');
+		});
+
+	</script>
+
+</body>
+</html>

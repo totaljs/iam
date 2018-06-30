@@ -1,0 +1,17 @@
+<h1>Products</h1>
+
+<div data-bind="products.grid__template">
+	<script type="text/html">
+		{{ foreach m in value }}
+			<div>{{ m.name }}</div>
+		{{ end }}
+	</script>
+</div>
+
+<script>
+	PLUGIN('products', function(exports) {
+		exports.refresh = function() {
+			AJAX('GET /api/products/', 'products.grid');
+		};
+	});
+</script>
