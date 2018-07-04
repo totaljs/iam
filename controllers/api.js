@@ -10,4 +10,12 @@ exports.install = function() {
 	// Products
 	ROUTE('GET  /api/products/',  ['*Product --> @query']);
 
+	ROUTE('GET     /api/cl/                    *Common --> @codelist');
+
+	ROUTE('GET     /api/accounts/              *Account --> @query');
+	ROUTE('GET     /api/accounts/{id}/         *Account --> @get');
+	ROUTE('POST    /api/accounts/              *Account --> @insert');
+	ROUTE('PUT     /api/accounts/{id}/         *Account --> @update');
+	ROUTE('DELETE  /api/accounts/{id}/         *Account --> @remove');
+	ROUTE('GET     /api/accounts/current/      *Account --> @current');
 };
