@@ -1,8 +1,11 @@
 [![MIT License][license-image]][license-url]
 
-# Node.js Identity and Access Management
+# Node.js OAuth 2 Identity and Access Management
 
-![OpenSocial: IAM](http://cdn.totaljs.com/images/iam.png)
+![IAM called OpenSocial](http://cdn.totaljs.com/images/iam.png)
+
+- [Homepage](https://www.totaljs.com/iam/)
+- MIT license
 
 ## Requirements
 
@@ -38,6 +41,7 @@ This product is __100%__ sponsored by [LabLynx, Inc.](https://www.lablynx.com/).
 
 - Total Avengers <info@totalavengers.com>
 - Developer: Peter Širka
+- <https://www.totalavengers.com>
 
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
 [license-url]: license.txt
