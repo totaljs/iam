@@ -37,7 +37,7 @@ $ npm install
 
 ## Funding
 
-This product is __100%__ sponsored by [LabLynx, Inc.](https://www.lablynx.com/). It's written under MIT license.
+This product is __100%__ sponsored by [LabLynx, Inc.](https://www.lablynx.com). It's written under MIT license.
 
 ## Author
 
