@@ -1,16 +1,16 @@
-name                            : Total.js
-author                          : You company name
-version                         : 1.0.0
+name                  : OpenSocial
+author                : Total Avengers
 
-// Mail settings
-mail-smtp                       : smtp.yourwebsite.com
-mail-smtp-options               : {"secure":false,"port":25,"user":"","password":"","timeout":10000}
-mail-address-from               : your@yourwebsite.com
-mail-address-reply              : your@yourwebsite.com
-mail-address-copy               :
+// https://www.ipdata.co
+geoipkey              : YOUR_GEO_IP_KEY
+cookie                : __osauth
+authkey               : IAM_session
+url                   : https://iam.totaljs.com
 
+// SMTP settings
+mail_smtp             : smtp.yourwebsite.com
+mail_smtp_options     : {"secure":false,"port":25,"user":"","password":"","timeout":10000}
+mail_address_from     : your@yourwebsite.com
+mail_address_reply    : your@yourwebsite.com
 
-table.users                     : id:string|supervisorid:string|photo:string|token:string|name:string|firstname:string|lastname:string|gender:string|email:string|phone:string|company:string|department:string|group:string|reference:string|place:string|position:string|login:string|password:string|language:string|blocked:boolean|customer:boolean|notifications:boolean|sa:boolean|inactive:boolean|sounds:boolean|datebirth:date|datebeg:date|dateend:date|groups:string|roles:string
-table.groups                    : id:string|name:string|created:date
-table.roles                     : id:string|groupid:string|name:string|created:date
-table.apps                      : id:string|name:string|token:string|urlnotify|active:boolean|created:date
+database              : postgresql://localhost:5432/opensocial

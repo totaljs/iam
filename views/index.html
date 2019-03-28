@@ -1,5 +1,5 @@
 @{layout('')}
-@{title('SPA example')}
+@{title(config.name)}
 
 <!DOCTYPE html>
 <html>
@@ -7,49 +7,224 @@
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=10" />
 	<meta name="format-detection" content="telephone=no" />
-	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
 	<meta name="robots" content="all,follow" />
-	<link rel="stylesheet" href="//cdn.componentator.com/spa.min@15.css" />
-	<script src="//cdn.componentator.com/spa.min@15.js"></script>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+	<meta name="apple-mobile-web-app-title" content="@{'%name'}" />
+	<link rel="apple-touch-icon" href="/img/icon.png" />
+	<link rel="stylesheet" href="//cdn.componentator.com/spa.min@17.css" />
+	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,200,700" />
+	<script src="//cdn.componentator.com/spa.min@17.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/ua-parser-js@0/dist/ua-parser.min.js"></script>
 	@{import('meta', 'head', 'default.css', 'default.js', 'favicon.ico')}
 </head>
-<body data-jc="exec">
+<body data---="exec">
 
-	<div data-jc="LAZY loading" class="hidden"></div>
-	<div data-jc="LAZY calendar"></div>
-	<div data-jc="LAZY confirm"></div>
-	<div data-jc="LAZY message"></div>
+	<div data---="loading" class="hidden"></div>
+	<div data---="message"></div>
+	<div data---="LAZY autocomplete__null__height:200"></div>
+	<div data---="LAZY snackbar__null__button:@(Dismiss)"></div>
+	<div data---="LAZY menu"></div>
+	<div data---="LAZY confirm"></div>
+	<div data---="LAZY directory"></div>
+	<div data---="LAZY datepicker"></div>
+
+	<div data---="importer__common.intro__if:profile;url:/intro/profile.html"></div>
+
+	<header>
+		<button data-bind="null__click:mainmenu"><i class="fa fa-navicon"></i></button>
+		<a href="/" class="logo"><img src="@{'logo.svg'}" alt="@{'%name'}" border="0" class="img-responsive" /></a>
+		<!--
+		<div class="user">
+			<div class="avatar">@{user.initials}</div>
+		</div>
+		-->
+		<div class="tools hidden-xs">
+			<a href="/settings/" class="R"><i class="fa fa-cog"></i><span>@{user.email}</span></a>
+			<a href="/logout/"><i class="fa fa-sign-out"></i><span>@(Sign out)</span></a>
+		</div>
+	</header>
 
 	<div class="container">
+		<div class="row">
+			<div class="col-lg-2 col-sm-3 mainmenu-container" data---="selected__common.page__selector:a.R">
 
-		<nav>
-			<a href="/" class="R">Dashboard</a>
-			<a href="/users/" class="R">Users</a>
-			<a href="/products/" class="R">Products</a>
-		</nav>
+				<div class="mainmenu">
+					<div class="scroller-xs">
 
-		<div data-jc="part__common.page__if:dashboard;url:/pages/dashboard.html;reload:dashboard/refresh"></div>
-		<div data-jc="part__common.page__if:users;url:/pages/users.html;reload:users/refresh"></div>
-		<div data-jc="part__common.page__if:products;url:/pages/products.html;reload:products/refresh"></div>
+						<div class="caption">@(My account)</div>
+						<nav class="links">
+							<a href="/" class="R" data-if="dashboard"><i class="fa fa-dashboard"></i>@(Dashboard)</a>
+							<a href="/accounts/" class="R" data-if="accounts"><i class="fa fa-universal-access"></i>@(Accounts)</a>
+							<a href="/profiles/" class="R" data-if="profiles"><i class="fa fa-id-card"></i>@(Profiles)</a>
+							<a href="/links/" class="R" data-if="links"><i class="fa fa-link"></i>@(Links)</a>
+							<a href="/settings/" class="R" data-if="settings"><i class="fa fa-cog"></i>@(Settings)</a>
+							<a href="/logout/"><i class="fa fa-sign-out"></i>@(Sign out)</a>
+						</nav>
+						<br />
+						@{if user.isdeveloper}
+						<div class="caption">@(Developer)</div>
+						<nav class="links">
+							<a href="/apps/" class="R" data-if="apps"><i class="fa fa-list"></i>@(My Apps)</a>
+							<a href="/docs/" class="R" data-if="docs"><i class="fa fa-book"></i>@(Documentation)</a>
+						</nav>
+						<br />
+						@{fi}
+						@{if user.sa}
+						<div class="caption">@(Admin)</div>
+						<nav class="links">
+							<a href="/admin/users/" class="R" data-if="adminusers"><i class="fa fa-users"></i>@(Users)</a>
+							<a href="/admin/apps/" class="R" data-if="adminapps"><i class="fa fa-list"></i>@(Apps)</a>
+							<a href="/admin/oauth/" class="R" data-if="adminoauth"><i class="fa fa-lock"></i>@(OAuth)</a>
+							<a href="/admin/settings/" class="R" data-if="adminsettings"><i class="fa fa-cogs"></i>@(Settings)</a>
+						</nav>
+						@{fi}
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-10 col-sm-9">
+				<br class="visible-xs" />
+				<div id="body">
 
+					<div data---="part__common.page__if:dashboard;url:/parts/dashboard.html;reload:dashboard/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:profiles;url:/parts/profiles.html;reload:profiles/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:accounts;url:/parts/accounts.html;reload:accounts/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:apps;url:/parts/apps.html;reload:apps/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:settings;url:/parts/settings.html;reload:settings/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:links;url:/parts/links.html;reload:links/reload;cleaner:5"></div>
+
+					<!-- ADMIN AREA -->
+					<div data---="part__common.page__if:adminapps;url:/parts/admin-apps.html;reload:adminapps/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:adminusers;url:/parts/admin-users.html;reload:adminusers/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:adminoauth;url:/parts/admin-oauth.html;reload:adminoauth/reload;cleaner:5"></div>
+					<div data---="part__common.page__if:adminsettings;url:/parts/admin-settings.html;reload:adminsettings/reload;cleaner:5"></div>
+				</div>
+			</div>
+		</div>
 	</div>
+
+	<!-- GLOBAL IMPORTS -->
+	<div data---="importer__common.form__if:profilesverify;cleaner:5;url:/forms/profile-verify.html"></div>
+
+	@{json(user, 'userdata')}
 
 	<script>
 
-		NAV.clientside('.R');
-
 		var common = {};
+		var user = PARSE('#userdata');
+
+		ENV('date', user.dateformat);
+		DEF.dateformat = user.dateformat;
+
+		(function() {
+			var redirect = localStorage.getItem('redirect');
+			if (redirect) {
+				setInterval(function() {
+					SETTER(true, 'loading', 'show');
+				}, 1000);
+				setTimeout(function() {
+					localStorage.removeItem('redirect');
+					location.href = redirect;
+				}, 3000);
+			}
+		})();
+
+		AJAX('GET /api/cl/', function(response) {
+			response.dateformats = [{ id: 'yyyy-MM-dd', name: '@(year-month-day)' }, { id: 'dd.MM.yyyy', name: '@(day.month.year)' }, { id: 'MM.dd.yyyy', name: '@(month.day.year)' }];
+			response.genders = [{ id: 'male', name: '@(Male)' }, { id: 'female', name: '@(Female)' }];
+			SET('common.cl', response);
+		});
+
+		NAV.clientside('.R');
 
 		ROUTE('/', function() {
 			SET('common.page', 'dashboard');
 		});
 
-		ROUTE('/users/', function() {
-			SET('common.page', 'users');
+		ROUTE('/accounts/', function() {
+			SET('common.page', 'accounts');
 		});
 
-		ROUTE('/products/', function() {
-			SET('common.page', 'products');
+		ROUTE('/apps/', function() {
+			SET('common.page', 'apps');
+		});
+
+		ROUTE('/profiles/', function() {
+			SET('common.page', 'profiles');
+		});
+
+		ROUTE('/links/', function() {
+			SET('common.page', 'links');
+		});
+
+		ROUTE('/admin/apps/', function() {
+			SET('common.page', 'adminapps');
+		});
+
+		ROUTE('/admin/users/', function() {
+			SET('common.page', 'adminusers');
+		});
+
+		ROUTE('/admin/oauth/', function() {
+			SET('common.page', 'adminoauth');
+		});
+
+		ROUTE('/admin/settings/', function() {
+			SET('common.page', 'adminsettings');
+		});
+
+		ROUTE('/settings/', function() {
+			SET('common.page', 'settings');
+		});
+
+		ROUTE('/help/', function() {
+			SET('common.page', 'help');
+		});
+
+		ROUTE('/docs/', function() {
+			SET('common.page', 'docs');
+		});
+
+		Thelpers.time2 = function(value) {
+
+			if (!value)
+				return value;
+
+			var diff = Date.now() - (value instanceof Date ? value : value.parseDate()).getTime();
+
+			var minutes = Math.ceil((diff / 1000) / 60);
+			if (minutes < 60) {
+				if (minutes <= 1)
+					return 'now';
+				return minutes + ' minutes ago';
+			}
+
+			var hours = (minutes / 60) >> 0;
+			if (hours < 24)
+				return hours + ' ' + Thelpers.pluralize(hours, 'hours', 'hour', 'hours', 'hours') + ' ago';
+
+			var days = (hours / 24) >> 0;
+			if (days < 30)
+				return days + ' ' + Thelpers.pluralize(days, 'days', 'day', 'days', 'days') + ' ago';
+
+			var months = (days / 29) >> 0;
+			if (months < 12)
+				return months + ' ' + Thelpers.pluralize(months, 'months', 'month', 'months', 'months') + ' ago';
+
+			var years = (months / 12) >> 0;
+			return years + ' ' + Thelpers.pluralize(years, 'years', 'year', 'years', 'years') + ' ago';
+		};
+
+		Thelpers.time = function(value) {
+			return value ? '<span class="ta-time" data-time="{0}" title="{2}">{1}</span>'.format(value.getTime(), Thelpers.time2(value), value.format(null)) : value;
+		};
+
+		ON('knockknock', function() {
+			$('.ta-time').each(function() {
+				var el = $(this);
+				el.html(Thelpers.time(new Date(+el.attrd('time'))));
+			});
 		});
 
 	</script>

@@ -1,0 +1,250 @@
+<div class="alert m hidden" data-bind="user.countprofiles__show:value==0"><b>@(You don't have created any profile.)</b> @(The profile is used as your identity.) <a href="/profiles/" class="R" style="margin-left:5px"><i class="fa fa-plus-circle"></i>@(Add profile)</a></div>
+
+<h2>@(App sessions)</h2>
+
+<div data---="table__dashboard.oauthsessions__highlight:false">
+
+	<script type="text/html" data-size="150px,0,150px,135px,120px">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-rocket color"></i> <a href="{{ url }}" target="_blank" class="gray">{{ appname }}</a></td>
+			<td class="fs12"><i class="fa fa-{{ if device.device.type === 'mobile' }}mobile{{ else if device.device.type === 'tablet' }}tablet{{ else }}desktop{{ fi }} w20"></i>{{ device.browser.name }}, {{ device.os.name }}</td>
+			<td class="fs12"><div class="gray hellip"><i class="far fa-user-circle mr5"></i>{{ profilename }}</div></td>
+			<td class="fs12"><span class="link red fs11 ml5 exec" data-exec="dashboard/cancel"><i class="fa fa-times mr5"></i>@(Cancel session)</span></td>
+			<td class="fs12 right silver">{{ dtaccessed | time }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="0,135px,120px" data-display="md,sm">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-rocket color"></i> {{ appname }}</td>
+			<td class="fs12"><span class="link red fs11 ml5 exec" data-exec="dashboard/cancel"><i class="fa fa-times mr5"></i>@(Cancel session)</span></td>
+			<td class="fs12 right silver">{{ dtaccessed | time }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="0,120px" data-display="xs">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-rocket color"></i> {{ appname }}</td>
+			<td class="fs12 right"><span class="link red fs11 ml5 exec" data-exec="dashboard/cancel"><i class="fa fa-times mr5"></i>@(Cancel session)</span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(No active sessions)
+	</script>
+
+</div>
+
+<br />
+<br />
+
+<h2>@(My sessions)</h2>
+
+<div data---="table__dashboard.sessions__highlight:false">
+	<script type="text/html" data-size="0,135px,120px">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-circle color"></i> {{ note }}</td>
+			<td class="fs12"><span class="link red fs11 ml5 exec" data-exec="dashboard/cancel2"><i class="fa fa-times mr5"></i>@(Cancel session)</span></td>
+			<td class="fs12 right silver">{{ used | time }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="0,120px" data-display="xs">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-circle color"></i> {{ note }}</td>
+			<td class="fs12 right"><span class="link red fs11 ml5 exec" data-exec="dashboard/cancel2"><i class="fa fa-times mr5"></i>@(Cancel session)</span></td>
+		</tr>
+	</script>
+</div>
+
+<br />
+<br />
+
+<div class="pull-right mt5 hidden" data-bind="dashboard.history__show:value && value.length>0">
+	<span class="link red fs12 exec" data-exec="dashboard/clear"><i class="fa fa-trash-o mr5"></i>@(Clear history)</span>
+</div>
+<h2>@(History)</h2>
+<div data---="table__dashboard.history__detail:true;multiple:true;remember:true">
+
+	<script type="text/html" data-size="150px,0,150px,135px,120px">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-info-circle blue"></i> {{ loggername }}</td>
+			<td class="fs12"><i class="fa fa-{{ if device.device.type === 'mobile' }}mobile{{ else if device.device.type === 'tablet' }}tablet{{ else }}desktop{{ fi }} w20"></i>{{ device.browser.name }}, {{ device.os.name }} / <span class="silver">{{ city | def }}</span></td>
+			<td class="fs12">{{ if profilename }}<div class="gray hellip"><i class="far fa-user-circle mr5"></i>{{ profilename }}</div>{{ fi }}</td>
+			<td class="fs12"><i class="fa fa-wifi green mr5"></i>{{ ip }}</td>
+			<td class="fs12 right silver">{{ dtcreated | time }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="150px,0,120px" data-display="md,sm">
+		<tr>
+			<td class="fs12 gray"><i class="fa fa-info-circle blue"></i> {{ loggername }}</td>
+			<td><i class="fa fa-desktop mr5"></i>{{ device.browser.name }}, {{ device.os.name }}</td>
+			<td class="right silver">{{ dtcreated | time }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="0,120px" data-display="xs">
+		<tr>
+			<td><i class="fa fa-desktop mr5"></i>{{ device.browser.name }}, {{ device.os.name }}</td>
+			<td class="right silver">{{ dtcreated | time }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+		<div class="padding bg-smoke">
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="line">
+						<span>@(City)</span>
+						<div>{{ city | def }}</div>
+					</div>
+					<div class="line">
+						<span>@(Region)</span>
+						<div>{{ region | def }}</div>
+					</div>
+					<div class="line">
+						<span>@(Country)</span>
+						<div>{{ country | def }} {{ if countrycode }}({{ countrycode}}){{ fi }}</div>
+					</div>
+					<div class="line">
+						<span>@(Continent)</span>
+						<div>{{ continent | def }} {{ if continentcode }}({{ continentcode}}){{ fi }}</div>
+					</div>
+					<div class="line">
+						<span>@(Profile name)</span>
+						<div class="b">{{ profilename | def }}</div>
+					</div>
+					<div class="line">
+						<span>@(App name)</span>
+						<div class="b">{{ appname | def }}</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="line">
+						<span>@(Logged)</span>
+						<div>{{ dtcreated | time }}</div>
+					</div>
+					<div class="line">
+						<span>@(Browser)</span>
+						<div>{{ device.browser.name }}</div>
+					</div>
+					<div class="line">
+						<span>@(Operation system)</span>
+						<div>{{ device.os.name }}</div>
+					</div>
+					<div class="line">
+						<span>@(Device)</span>
+						<div><span class="mr5 fs12">{{ if device.device.type }}{{ device.device.type }}{{ else }}@(desktop){{ fi }}</span> <span class="link fs11 {{ if isdisabled }}red{{ else }}gray{{ fi }} exec" data-exec="dashboard/disable" data-id="{{ deviceid }}">{{ if isdisabled }}<i class="fa fa-unlock mr5"></i><b>@(Enable device)</b>{{ else }}<i class="fa fa-lock mr5"></i>@(Disable device){{ fi }}</span></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(No history)
+	</script>
+
+</div>
+
+<br />
+
+<script>
+
+	PLUGIN('dashboard', function(exports) {
+
+		exports.reload = function() {
+			AJAX('GET /api/dashboard/', function(response) {
+
+				var parser = new UAParser();
+				var cache = {};
+
+				for (var i = 0; i < response.history.length; i++) {
+					var item = response.history[i];
+					var c = cache[item.devicename];
+					if (!c) {
+						parser.setUA(item.devicename);
+						c = cache[item.devicename] = parser.getResult();
+					}
+					item.device = c;
+				}
+
+				for (var i = 0; i < response.oauthsessions.length; i++) {
+					var item = response.oauthsessions[i];
+					var c = cache[item.devicename];
+					if (!c) {
+						parser.setUA(item.devicename);
+						c = cache[item.devicename] = parser.getResult();
+					}
+					item.device = c;
+				}
+
+				SET('?.history', response.history);
+				SET('?.oauthsessions', response.oauthsessions);
+				SET('?.sessions', response.sessions);
+			});
+		};
+
+		exports.disable = function(el) {
+
+			var id = el.attrd('id');
+
+			SETTER('confirm', 'show', '@(Are you sure you want to disable selected device?)', ['"check-circle" @(Yes)', '@(Cancel)'], function(index) {
+				exports.scope();
+				!index && AJAX('GET /api/internal/disable/{0}/'.format(id), function(response) {
+					for (var i = 0; i < dashboard.history.length; i++) {
+						var item = dashboard.history[i];
+						if (item.deviceid === id)
+							item.isdisabled = !item.isdisabled;
+					}
+					UPD('?.history');
+				});
+			});
+		};
+
+		exports.cancel = function(el) {
+			var row = el.closest('tr');
+			var indexer = +row.attrd('index');
+			var sessions = GET('?.oauthsessions');
+			var session = sessions[indexer];
+
+			SETTER('confirm', 'show', '@(Are you sure you want to cancel current session?)', ['"check-circle" @(Yes)', '@(Cancel)'], function(index) {
+				exports.scope();
+				!index && AJAX('GET /api/internal/cancel/{id}/'.arg(session), function(response) {
+					sessions.splice(indexer, 1);
+					UPD('?.oauthsessions');
+				});
+			});
+		};
+
+		exports.cancel2 = function(el) {
+			var row = el.closest('tr');
+			var indexer = +row.attrd('index');
+			var sessions = GET('?.sessions');
+			var session = sessions[indexer];
+
+			SETTER('confirm', 'show', '@(Are you sure you want to cancel current session?)', ['"check-circle" @(Yes)', '@(Cancel)'], function(index) {
+				exports.scope();
+				!index && AJAX('GET /api/internal/cancel/{id}/internal/'.arg(session), function(response) {
+
+					if (response.value === true) {
+						// A current session is removed
+						location.href = '/';
+					} else {
+						sessions.splice(indexer, 1);
+						UPD('?.sessions');
+					}
+				});
+			});
+		};
+
+		exports.clear = function() {
+			SETTER('confirm', 'show', '@(Are you sure you want to clear all history?)', ['"check-circle" @(Yes)', '@(Cancel)'], function(index) {
+				exports.scope();
+				!index && AJAX('GET /api/dashboard/clear/', FUNC.messageresponse('@(History has been removed successfully.)', exports.reload));
+			});
+		};
+	});
+
+</script>

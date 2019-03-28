@@ -1,0 +1,56 @@
+<h2><i class="fa fa-link orange"></i>@(Links)</h2>
+
+<div data---="table__links.grid__highlight:false">
+
+	<script type="text/html" data-size="120px,0,200px,120px,80px">
+		<tr class="fs12">
+			<td style="color:{{ oauthcolor }}"><i class="fab w20 fa-{{ oauthid }}"></i>{{ oauthname }}</td>
+			<td>{{ name }}</td>
+			<td class="gray">{{ email }}</td>
+			<td>{{ dtlogged | time2 }}</td>
+			<td class="right fs11"><span class="link exec {{ if isdisabled }}red{{ else }}gray{{ fi }}" data-exec="links/disable">{{ if isdisabled }}<b>@(enable)</b>{{ else }}@(disable){{ fi }}</span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="120px,0,120px,120px" data-display="md,sm">
+		<tr class="fs12">
+			<td style="color:{{ oauthcolor }}"><i class="fab w20 fa-{{ oauthid }}"></i>{{ oauthname }}</td>
+			<td>{{ name }}</td>
+			<td>{{ dtlogged | time2 }}</td>
+			<td class="right fs11"><span class="link exec {{ if isdisabled }}red{{ else }}gray{{ fi }}" data-exec="links/disable">{{ if isdisabled }}<b>@(enable)</b>{{ else }}@(disable){{ fi }}</span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-size="0,120px" data-display="xs">
+		<tr class="fs12">
+			<td style="color:{{ oauthcolor }}"><i class="fab w20 fa-{{ oauthid }}"></i>{{ oauthname }}</td>
+			<td class="right fs11"><span class="link exec {{ if isdisabled }}red{{ else }}gray{{ fi }}" data-exec="links/disable">{{ if isdisabled }}<b>@(enable)</b>{{ else }}@(disable){{ fi }}</span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(You don't have any links)
+	</script>
+</div>
+
+<br />
+
+<script>
+	PLUGIN('links', function(exports) {
+
+		exports.refresh = function() {
+			AJAX('GET /api/links/', '?.grid');
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+
+		exports.disable = function(row) {
+			if (row instanceof jQuery)
+				row = links.grid[+row.closest('tr').attrd('index')];
+			AJAX('GET /api/links/{id}/disable/'.arg(row), exports.refresh);
+		};
+
+	});
+</script>

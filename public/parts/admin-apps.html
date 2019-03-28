@@ -1,0 +1,158 @@
+<div class="toolbar">
+	<label><i class="fa fa-plug orange"></i>@(All registered apps)</label>
+</div>
+
+<div data---="table__adminapps.grid.items__detail:true;multiple:true;remember:true">
+
+	<script type="text/html" data-size="0,120px">
+		<tr>
+			<td>{{ if icon }}<i class="fa fa-camera mr5"></i>{{ fi }}{{ name }} {{ if !isconfirmed }}<span class="badge badge-red"><i class="fa fa-warning"></i>@(check)</span>{{ fi }}{{ if isdisabled }}<span class="badge badge-red">@(disabled)</span>{{ fi }}{{ if isinactive }}<span class="badge badge-orange">@(inactive)</span>{{ fi }}</td>
+			<td class="right"><span class="link exec black" data-exec="adminapps/menu" title="@(Options)"><i class="fa fa-cog"></i></span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+		<div class="row">
+			<div class="col-sm-2 m hidden-xs">
+				<img src="{{ if icon }}{{ icon }}{{ else }}/img/empty.png{{ fi }}" alt="{{ name }}" border="0" class="img-responsive img-rounded" />
+			</div>
+			<div class="col-sm-10 m">
+				<div class="line">
+					<span>@(Description)</span>
+					<div>{{ description }}</div>
+				</div>
+				<div class="line">
+					<span>@(Author)</span>
+					<div>{{ author }}</div>
+				</div>
+				<div class="line">
+					<span>@(Email address)</span>
+					<div><a href="mailto:{{ email }}">{{ email }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Phone number)</span>
+					<div>{{ phone | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(URL)</span>
+					<div><a href="{{ url }}" target="_blank">{{ url }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Required fields)</span>
+					<div>{{ fields | adminappfields | def }}</div>
+				</div>
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-sm-4 col-sm-offset-2">
+				<div class="line">
+					<span>@(Created)</span>
+					<div>{{ dtcreated | time | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Updated)</span>
+					<div>{{ dtcreated | time | def }}</div>
+				</div>
+			</div>
+			<div class="col-sm-4">
+				<div class="line">
+					<span class="b">@(Confirmed)</span>
+					<div>{{ isconfirmed | checkbox }}</div>
+				</div>
+				<div class="line">
+					<span>@(Activated)</span>
+					<div>{{ isinactive | checkbox(true) }}</div>
+				</div>
+				<div class="line">
+					<span>@(Disabled)</span>
+					<div>{{ isdisabled | checkbox }}</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(You don't have defined any app)
+	</script>
+
+</div>
+
+<br />
+
+<div data---="importer__common.form__if:adminappsform;cleaner:5;url:/forms/app.html"></div>
+
+<script>
+	PLUGIN('adminapps', function(exports) {
+
+		exports.create = function() {
+			DEFAULT('appsform.*__{}');
+			SET('common.form', 'appsform');
+		};
+
+		exports.refresh = function() {
+			AJAX('GET /api/admin/apps/', '?.grid');
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+
+		exports.menu = function(el, e) {
+			var row = adminapps.grid.items[+el.closest('tr').attrd('index')];
+			var opt = {};
+
+			opt.element = el;
+			opt.align = 'right';
+			opt.offsetY = -25;
+			opt.offsetX = 5;
+			opt.items = [];
+			opt.items.push({ id: 'active', name: row.isinactive ? '@(Active)' : '@(Inactive)', icon: row.isinactive ? 'play-circle green' : 'stop-circle red' });
+			opt.items.push({ id: 'confirm', name: row.isconfirmed ? '@(Set to unconfirmed)' : '@(Confirm)', icon: 'check-circle ' + (row.isconfirmed ? 'red' : 'green') });
+			opt.items.push('-');
+			opt.items.push({ id: 'remove', name: '@(Remove)', icon: 'trash-o' });
+			opt.callback = function(val) {
+				exports.scope();
+				exports[val.id](row);
+			};
+
+			SETTER('menu', 'show', opt);
+		};
+
+		exports.remove = function(row) {
+			SETTER('confirm', 'show', '@(Are you sure you want to remove selected app <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+				!index && AJAX('DELETE /api/admin/apps/{id}'.arg(row), exports.refresh);
+			});
+		};
+
+		exports.confirm = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/apps/{id}/confirm/'.arg(row), exports.refresh);
+		};
+
+		exports.disable = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/apps/{id}/disable/'.arg(row), exports.refresh);
+		};
+
+		exports.active = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/apps/{id}/active/'.arg(row), exports.refresh);
+		};
+
+		exports.secret = function(el) {
+			var span = el.parent().find('span[data-secret]');
+			span.html(span.attrd('secret'));
+			el.remove();
+		};
+
+	});
+
+	Thelpers.adminappfields = function(val) {
+		return val ? val.replace(/,/g, ', ') : val;
+	};
+
+</script>

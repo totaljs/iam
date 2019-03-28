@@ -1,0 +1,7 @@
+@{layout('~mails/layout')}
+
+<div style="margin-top:15px">@(The code below is a verification code for activating of your account on <b>@{'%name'}</b>. Please type the code below into the verification window.)</div>
+<br />
+<div style="border-top:1px solid #F0F0F0;padding:30px 0 10px">
+	<div style="position:relative;display:inline-block;padding:20px 0;border-radius:3px;text-align:center;text-decoration:none;margin:0 auto;max-width:300px;width:100%;border:2px solid #FF8711;display:block;color:black;font-size:28px;font-weight:bold;letter-spacing:5px">@{model.verifycode}</div>
+</div>

@@ -1,75 +1,224 @@
-NEWSCHEMA('User', function(schema) {
+NEWSCHEMA('Users', function(schema) {
 
-	schema.define('id', 'UID');
-	schema.define('token', 'String(50)');
-	schema.define('supervisorid', 'UID');
-	schema.define('photo', 'String(200)');
-	schema.define('name', 'String(40)');
-	schema.define('firstname', 'Capitalize(40)', true);
-	schema.define('lastname', 'Capitalize(40)', true);
-	schema.define('gender', ['male', 'female']);
 	schema.define('email', 'Email', true);
-	schema.define('phone', 'Phone');
-	schema.define('company', 'String(40)');
-	schema.define('ou', 'String(200)');
-	schema.define('language', 'String(2)');
-	schema.define('reference', 'String(40)');
-	schema.define('locality', 'String(80)');
-	schema.define('login', 'String(120)');
-	schema.define('password', 'String(50)');
-	schema.define('roles', '[String]');
-	schema.define('groups', '[String]');
-	schema.define('apps', '[UID]');
-	schema.define('notes', 'String(200)');
-	schema.define('blocked', Boolean);
-	schema.define('customer', Boolean);
-	schema.define('notifications', Boolean);
-	schema.define('sa', Boolean);
-	schema.define('inactive', Boolean);
-	schema.define('confirmed', Boolean);
-	schema.define('sounds', Boolean);
-	schema.define('datebirth', Date);
-	schema.define('datebeg', Date);
-	schema.define('dateend', Date);
+	schema.define('phone', 'Phone', true);
+	schema.define('password', String, true);
 
-	schema.setQuery(function($) {
+	schema.setInsert(function($) {
 
-		var arr = [];
+		var model = $.model;
 
-		for (var i = 0; i < 10; i++)
-			arr.push({ name: 'User ' + U.GUID(10) });
+		DBMS().read('tbl_user').make(function(builder) {
+			builder.where('email', model.email);
+			builder.where('isremoved', false);
+			builder.callback(function(err, response) {
 
-		$.callback(arr);
+				if (response) {
+					$.invalid('error-emailexists');
+					return;
+				}
+
+				model.id = UID();
+				model.login = model.email;
+				model.dtcreated = NOW;
+				model.dateformat = 'yyyy-MM-dd';
+				model.timeformat = 24;
+				model.password = model.password.sha256();
+				model.verifycode = FUNC.verifycode();
+				model.isdeveloper = PREF.defdeveloper == null || PREF.defdeveloper === true;
+
+				DBMS().insert('tbl_user', model).callback(function() {
+
+					if (err) {
+						$.invalid(err);
+						return;
+					}
+
+					// Sends email
+					MAIL(model.email, '@(Verification code) - ' + model.verifycode, 'mails/verify', model, $.language);
+
+					// Responds
+					$.success(true, model.id);
+				});
+
+			});
+		});
 	});
 
-	schema.setSave(function($) {
+	schema.addWorkflow('verify', function($) {
+		var builder = $.DB().read('tbl_user');
 
+		// Enables ORM
+		builder.orm();
+
+		// Conditions
+		builder.where('id', $.id);
+		builder.query('isconfirmed=FALSE AND isdisabled=FALSE AND isinactive=FALSE AND isremoved=FALSE');
+
+		// Fields
+		builder.fields('id', 'verifycode');
+
+		// Callback
+		builder.callback(function(err, response) {
+			if (response) {
+				if (response.verifycode === $.query.code) {
+
+					response.isconfirmed = true;
+					response.dtconfirmed = NOW;
+
+					// ORM: back to the DB
+					response.dbms.save(function(err, is) {
+						// Sign in
+						if (is)
+							FUNC.authcookie($, response.id, $.done());
+						else
+							$.success();
+					});
+
+				} else {
+					// What now?
+					// Reseting code?
+					$.invalid('error-profileverifycode');
+				}
+			} else
+				$.invalid('error-profile');
+		});
+	});
+
+	schema.addWorkflow('verify_password', function($) {
+		var builder = $.DB().read('tbl_user');
+
+		// Enables ORM
+		builder.orm();
+
+		// Conditions
+		builder.where('id', $.id);
+		builder.query('isconfirmed=TRUE AND isdisabled=FALSE AND isinactive=FALSE AND isremoved=FALSE');
+
+		// Fields
+		builder.fields('id', 'verifycode');
+
+		// Callback
+		builder.callback(function(err, response) {
+			if (response) {
+				if (response.verifycode === $.query.code) {
+
+					response.dtconfirmed = NOW;
+
+					// ORM: back to the DB
+					response.dbms.save(function(err, is) {
+						// Sign in
+						if (is)
+							FUNC.authcookie($, response.id, $.done());
+						else
+							$.success();
+					});
+
+				} else {
+					// What now?
+					// Reseting code?
+					$.invalid('error-profileverifycode');
+				}
+			} else
+				$.invalid('error-profile');
+		});
+	});
+
+});
+
+NEWSCHEMA('Users/Login', function(schema) {
+
+	schema.define('login', 'Email', true);
+	schema.define('password', 'String(30)', true);
+
+	schema.addWorkflow('exec', function($) {
+
+		var db = $.DB();
 		var model = $.clean();
-		var user;
-		var newbie = false;
 
-		if (model.id) {
-			newbie = true;
-			user = MAIN.users.findItem('id', model.id);
-			if (user == null) {
-				$.invalid('error-users');
-				return;
-			}
-		} else {
-			user = {};
-			user.id = UID();
-			MAIN.users.push(user);
-		}
+		db.read('tbl_user').where('login', model.login).where('password', model.password.sha256()).query('isremoved=FALSE').fields('id,isdisabled,isconfirmed,istwofactor,isinactive').callback(function(err, response) {
 
-		// Copies data
-		U.copy(model, user);
+			if (response) {
+				if (response.isdisabled)
+					$.invalid('error-disabled');
+				else if (!response.isconfirmed)
+					$.invalid('error-emailconfirm');
+				else if (response.isinactive)
+					$.invalid('error-inactive');
+				else {
+					FUNC.device(response.id, $.controller, function(err, device) {
+						if (err || !device.isauthorized)
+							$.invalid('error-deviceunauthorized');
+						else
+							FUNC.authcookie($, response.id, $.done());
+					});
+				}
+			} else
+				$.invalid('error-credentials');
 
-		// Perform update
-		MAIN.refresh();
-		MAIN.save();
+		});
 
-		EMIT(newbie ? 'users.create' : 'users.update', user);
-		$.success();
 	});
 
+});
+
+NEWSCHEMA('Users/Resend', function(schema) {
+
+	schema.define('email', 'Email', true);
+
+	schema.addWorkflow('exec', function($) {
+
+		var db = $.DB();
+		var model = $.clean();
+
+		db.read('tbl_user').where('email', model.email).where('isremoved=FALSE AND isinactive=FALSE').fields('id,verifycode,isdisabled,isconfirmed').orm('id').callback(function(err, response) {
+
+			if (response) {
+				if (response.isdisabled)
+					$.invalid('error-disabled');
+				else if (response.isconfirmed)
+					$.invalid('error-emailconfirmed');
+				else if (response.isinactive)
+					$.invalid('error-inactive');
+				else {
+					response.verifycode = FUNC.verifycode();
+ 					response.dbms.save(function() {
+						MAIL(model.email, '@(Verification code) - ' + response.verifycode, 'mails/verify', response, $.language);
+						$.success(true, response.id);
+					}).fields('verifycode');
+				}
+			} else
+				$.invalid('error-emailaccount');
+		});
+	});
+});
+
+NEWSCHEMA('Users/Password', function(schema) {
+
+	schema.define('email', 'Email', true);
+
+	schema.addWorkflow('exec', function($) {
+
+		var db = $.DB();
+		var model = $.clean();
+
+		db.read('tbl_user').where('email', model.email).query('isremoved=FALSE AND isinactive=FALSE').fields('id,verifycode,isdisabled,isconfirmed').orm('id').callback(function(err, response) {
+			if (response) {
+				if (response.isdisabled)
+					$.invalid('error-disabled');
+				else if (!response.isconfirmed)
+					$.invalid('error-emailconfirm');
+				else if (response.isinactive)
+					$.invalid('error-inactive');
+				else {
+					response.verifycode = FUNC.verifycode();
+ 					response.dbms.save(function() {
+						MAIL(model.email, '@(Verification code) - ' + response.verifycode, 'mails/verify', response, $.language);
+						$.success(true, response.id);
+					}).fields('verifycode');
+				}
+			} else
+				$.invalid('error-emailaccount');
+		});
+	});
 });

@@ -1,0 +1,122 @@
+<style>
+	.accountsitem { border-bottom: 1px solid #E0E0E0; padding: 4px 0; }
+	.accountsitem-controls { float: right; font-size: 11px; }
+	.accountsitem-name { margin-right: 100px; }
+</style>
+
+<h2><i class="fa fa-universal-access orange"></i>@(My accounts in apps)</h2>
+<div class="alert m"><i class="fa fa-warning"></i>@(<b>Here you can found all your accounts in 3rd party applications.</b> You can logout or remove your account from specific app by two clicks.)</div>
+
+<div data---="table__accounts.grid__detail:accounts/detail;multiple:true;remember:true">
+
+	<script type="text/html">
+		<tr>
+			<td><i class="fa fa-rocket color mr5"></i> {{ name }}</td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+		<div class="row">
+			<div class="col-sm-2 m hidden-xs">
+				<img src="{{ if icon }}{{ icon }}{{ else }}/img/empty.png{{ fi }}" alt="{{ name }}" border="0" class="img-responsive img-rounded" />
+			</div>
+			<div class="col-sm-10 m">
+				<div class="line">
+					<span>@(Description)</span>
+					<div>{{ description }}</div>
+				</div>
+				<div class="line">
+					<span>@(Author)</span>
+					<div>{{ author }}</div>
+				</div>
+				<div class="line">
+					<span>@(Email address)</span>
+					<div><a href="mailto:{{ email }}">{{ email }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(URL)</span>
+					<div><a href="{{ url }}" target="_blank">{{ url }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Terms)</span>
+					<div><a href="{{ urlterms }}" target="_blank">{{ urlterms }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Privacy Policy)</span>
+					<div><a href="{{ urlprivacy }}" target="_blank">{{ urlprivacy }}</a></div>
+				</div>
+				<br />
+				<h3><i class="fa fa-user-circle green"></i>@(Used profiles)</h3>
+				<div>
+				{{ foreach m in profiles }}
+					<div class="accountsitem">
+						<div class="accountsitem-controls">{{ if m.sessionid }}<span class="link exec gray" data-exec="accounts/button" data-sessionid="{{ m.sessionid }}" data-name="logout" title="@(Logout profile)">@(logout)</span><i class="separator"></i>{{ fi }}<span class="link exec red b" data-exec="accounts/button" data-profileid="{{ m.profileid }}" data-name="remove" title="@(Remove profile data)"><i class="fa fa-trash-o mr5"></i>@(remove data)</span></div>
+						<div class="accountsitem-name">{{ m.name }}</div>
+					</div>
+				{{ end }}
+				</div>
+
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(No app uses your data)
+	</script>
+
+</div>
+
+<br />
+
+<div data---="importer__common.form__if:accountsform;cleaner:5;url:/forms/app.html"></div>
+
+<script>
+	PLUGIN('accounts', function(exports) {
+
+		exports.create = function() {
+			DEFAULT('accountsform.*__{}');
+			SET('common.form', 'accountsform');
+		};
+
+		exports.refresh = function() {
+			AJAX('GET /api/accounts/', '?.grid');
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+
+		exports.button = function(el) {
+			var index = +el.closest('td').attrd('index');
+			var name = el.attrd('name');
+			var row = accounts.grid[index];
+			var obj = { sessionid: el.attrd('sessionid'), profileid: el.attrd('profileid'), appid: row.id };
+
+			if (name === 'logout') {
+				SETTER('confirm', 'show', '@(Are you sure you want to logout profile from selected app <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+					!index && AJAX('GET /api/internal/cancel/{sessionid}/'.arg(obj), FUNC.messageresponse('@(Your profile has been unlogged successfully.)', exports.refresh));
+				});
+			} else if (name === 'remove') {
+				SETTER('confirm', 'show', '@(Are you sure you want to remove all personal data from selected app <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+					!index && AJAX('GET /api/internal/unlink/{profileid}/{appid}/'.arg(obj), FUNC.messageresponse('@(Your profile has been removed successfully.)', exports.refresh));
+				});
+			}
+		};
+
+		exports.secret = function(el) {
+			var span = el.parent().find('span[data-secret]');
+			span.html(span.attrd('secret'));
+			el.remove();
+		};
+
+		exports.detail = function(row, next) {
+			SETTER('loading', 'show');
+			AJAX('GET /api/accounts/{0}/profiles/ SYNC'.format(row.id), function(response) {
+				row.profiles = response;
+				next(row);
+				SETTER('loading', 'hide', 1000);
+			});
+		};
+
+	});
+</script>

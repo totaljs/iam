@@ -1,0 +1,148 @@
+<div data---="modal__common.form__if:profilesform;width:600;submit:profilesform/submit;icon:user-circle;reload:profilesform/reload" class="hidden">
+
+	<div>
+		<span class="link cancel"><i class="fa fa-times"></i></span>
+		<label></label>
+	</div>
+
+	<div data-scope="profilesform">
+
+		<div class="bg-smoke">
+			<div class="padding npb">
+				<div class="row">
+					<div class="col-sm-6 m">
+						<div data---="input__?.name__innerlabel:true;required:true__''">@(Profile name)</div>
+					</div>
+					<div class="col-sm-6 m">
+						<div data---="input__?.nick__innerlabel:true;required:true__''">@(Your nick)</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-6 m">
+						<div data---="input__?.firstname__innerlabel:true;required:true__''">@(First name)</div>
+					</div>
+					<div class="col-sm-6 m">
+						<div data---="input__?.lastname__innerlabel:true;required:true__''">@(Last name)</div>
+					</div>
+				</div>
+			</div>
+			<hr class="nmt nmb" />
+			<div class="padding">
+				<div class="row">
+					<div class="col-sm-4 m">
+						<div data---="input__?.dtbirth__innerlabel:true;type:date;format:@(yyyy-MM-dd)__null">@(Date birth)</div>
+					</div>
+					<div class="col-sm-4 m">
+						<div data---="input__?.dateformat__innerlabel:true;required:true;dirsource:common.cl.dateformats;dirsearch:false;direxclude:false__null">@(Date format)</div>
+					</div>
+					<div class="col-sm-4 m">
+						<div data---="input__?.language__innerlabel:true;required:true;dirsource:common.cl.languages;dirplaceholder:@(Search language)__null">@(Language)</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="fs12 gray">@(Gender)</div>
+						<div data---="radiobutton__?.gender__items:male|@(Male),female|@(Female);required:true__'male'"></div>
+					</div>
+					<div class="col-sm-8">
+						<div class="fs12 gray">@(Time format)</div>
+						<div data---="radiobutton__?.timeformat__items:12|@(12-hour clock),24|@(24-hour clock);required:true__24"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="padding npb">
+
+			<div class="row">
+				<div class="col-sm-4 m">
+					<div data---="preview__?.photo__width:300;height:300;icon:camera;url:/api/upload/base64/__null"></div>
+					<div class="help">@(300x300 pixels)</div>
+				</div>
+				<div class="col-sm-8 m">
+					<div data---="input__?.email__innerlabel:true;required:true;type:email__user.email">@(Email address)</div>
+					<div class="help m"><i class="fa fa-warning"></i>@(Email address must be confirmed)</div>
+					<div data---="input__?.phone__innerlabel:true__''">@(Phone number)</div>
+					<div class="help m"><i class="fa fa-globe"></i>@(International format)</div>
+					<div data---="input__?.url__innerlabel:true__''">@(Website URL)</div>
+				</div>
+			</div>
+
+		</div>
+
+		<hr class="nmt nmb" />
+		<div class="padding npb">
+			<h3 class="nb"><i class="fa fa-map-marker"></i>@(Postal address)</h3>
+
+			<div class="m">
+				<div data---="input__?.address__innerlabel:true;required:true__''">@(Address)</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6 m">
+					<div data---="input__?.city__innerlabel:true;required:true__''">@(City)</div>
+				</div>
+				<div class="col-sm-6 m">
+					<div data---="input__?.zip__innerlabel:true;required:true__''">@(ZIP)</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6 m">
+					<div data---="input__?.countryid__innerlabel:true;required:true;dirsource:common.cl.countries;dirplaceholder:@(Search country)__''">@(Country)</div>
+				</div>
+				<div class="col-sm-6 m">
+					<div data---="input__?.state__innerlabel:true__''">@(State)</div>
+				</div>
+			</div>
+		</div>
+		<div class="padding npb bg-smoke">
+			<h3 class="nb"><i class="far fa-building"></i>@(Work profile)</h3>
+			<div class="row">
+				<div class="col-sm-6 m">
+					<div data---="input__?.company__innerlabel:true__''">@(Company)</div>
+				</div>
+				<div class="col-sm-6 m">
+					<div data---="input__?.position__innerlabel:true__''">@(Position)</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div data---="validation__profilesform">
+		<span class="link cancel">@(Cancel)</span>
+		<button name="submit" disabled><i class="fa fa-floppy-o"></i>@(SAVE)</button>
+	</div>
+
+</div>
+
+<script>
+
+	PLUGIN('profilesform', function(exports) {
+
+		exports.reload = function(com) {
+			var model = GETR('?');
+			com.reconfigure({ title: model.id ? '@(Update profile)' : '@(Add a profile)' });
+		};
+
+		exports.submit = function(hide) {
+			var model = GETR('?');
+
+			if (model.id == null)
+				model.id = '';
+
+			AJAX('POST /api/profiles/{id}'.arg(model), model, FUNC.messageresponse(model.id ? '@(Profile has been created successfully)' : '@(Profile has been updated successfully)', function(response) {
+				if (response.success) {
+					EXEC('profiles/refresh');
+					hide();
+					if (response.value) {
+						SETR('profilesverify', { id: response.value, email: model.email, code: null });
+						SET('common.form', 'profilesverify', 1000);
+					}
+				}
+			}));
+		};
+
+	});
+
+</script>

@@ -1,0 +1,197 @@
+<div class="toolbar">
+	<div class="pull-right">
+		<button class="exec" data-exec="profiles/create"><i class="fa fa-plus-circle"></i>@(Add profile)</button>
+	</div>
+	<label><i class="fa fa-plug orange"></i>@(My profiles)</label>
+</div>
+
+<div data---="table__profiles.grid.items__detail:true;multiple:true;remember:true">
+
+	<script type="text/html" data-size="0,40px,150px">
+		<tr>
+			<td>{{ if photo }}<i class="fa fa-camera mr5"></i>{{ fi }}{{ name }}{{ if !isconfirmed }} <span class="badge badge-gray"><i class="fa fa-spin fa-spinner"></i>@(unconfirmed)</span>{{ fi }}</td>
+			<td><span class="badge badge-{{ if rating < 40 }}red{{ else if rating < 70 }}orange{{ else }}green{{ fi }} badge-small" title="@(Profile fill)">{{ rating }}%</span></td>
+			<td class="right fs11"><span class="link exec gray" data-exec="profiles/update">@(edit)</span><i class="separator"></i><span class="link exec black mr5" data-exec="profiles/menu" title="@(Options)"><i class="fa fa-cog"></i></span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+
+		<div class="row">
+			<div class="col-sm-2 m hidden-xs">
+				<img src="{{ if photo }}{{ photo }}{{ else }}/img/empty.png{{ fi }}" alt="{{ name }}" border="0" class="img-responsive img-rounded" />
+			</div>
+			<div class="col-sm-5">
+				<div class="line">
+					<span>@(Gender)</span>
+					<div>{{ gender | cl('genders') }}</div>
+				</div>
+				<div class="line">
+					<span>@(Nick)</span>
+					<div>{{ nick }}</div>
+				</div>
+				<div class="line">
+					<span>@(Personal name)</span>
+					<div>{{ firstname }} {{ lastname}}</div>
+				</div>
+				<div class="line">
+					<span>@(Company)</span>
+					<div>{{ company | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Position)</span>
+					<div>{{ position | def }}</div>
+				</div>
+			</div>
+			<div class="col-sm-5">
+				<div class="line">
+					<span>@(Language)</span>
+					<div>{{ language | cl('languages') }} <span class="silver">/ {{ language }}</span></div>
+				</div>
+				<div class="line">
+					<span>@(Date birth)</span>
+					<div>{{ dtbirth | format('[date]') | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Email)</span>
+					<div><a href="{{ email }}">{{ email }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Phone)</span>
+					<div>{{ phone | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Updated)</span>
+					<div>{{ dtupdated | time | def }}</div>
+				</div>
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-sm-5 col-sm-offset-2">
+				<div class="line">
+					<span>@(Address)</span>
+					<div>{{ address }}</div>
+				</div>
+				<div class="line">
+					<span>@(ZIP)</span>
+					<div>{{ zip }}</div>
+				</div>
+				<div class="line">
+					<span>@(City)</span>
+					<div>{{ city }}</div>
+				</div>
+			</div>
+			<div class="col-sm-5">
+				<div class="line">
+					<span>@(Country)</span>
+					<div>{{ countryid | cl('countries') }}</div>
+				</div>
+				<div class="line">
+					<span>@(State)</span>
+					<div>{{ State | def }}</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(You don't have defined any profile)
+	</script>
+
+</div>
+
+<br />
+
+<div data---="importer__common.form__if:profilesform;cleaner:5;url:/forms/profile.html"></div>
+
+<script>
+	PLUGIN('profiles', function(exports) {
+
+		exports.create = function() {
+			DEFAULT('profilesform.*__{}');
+			SET('common.form', 'profilesform');
+		};
+
+		exports.menu = function(el, e) {
+			var row = profiles.grid.items[+el.closest('tr').attrd('index')];
+			var opt = {};
+
+			opt.element = el;
+			opt.align = 'right';
+			opt.offsetY = -25;
+			opt.offsetX = 5;
+			opt.items = [];
+
+			!row.isconfirmed && opt.items.push({ id: 'resend', name: '@(Resend)', icon: 'envelope' });
+			opt.items.push({ id: 'update', name: '@(Edit profile)', icon: 'pencil' });
+			opt.items.push('-');
+			opt.items.push({ id: 'remove', name: '@(Remove)', icon: 'trash-o' });
+			opt.callback = function(val) {
+				exports.scope();
+				exports[val.id](row);
+			};
+
+			SETTER('menu', 'show', opt);
+
+			e.stopPropagation();
+			e.preventDefault();
+		};
+
+		exports.refresh = function() {
+			AJAX('GET /api/profiles/', function(response) {
+				SET('?.grid', response);
+				SET('users.countprofiles', response.count);
+			});
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+
+		exports.update = function(row) {
+
+			if (row instanceof jQuery)
+				row = profiles.grid.items[+row.closest('tr').attrd('index')];
+
+			AJAX('GET /api/profiles/{id}'.arg(row), function(response) {
+				SETR('profilesform', response);
+				SET('common.form', 'profilesform');
+			});
+		};
+
+		exports.remove = function(row) {
+			SETTER('confirm', 'show', '@(Are you sure you want to remove selected profile <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+				!index && AJAX('DELETE /api/profiles/{id}'.arg(row), FUNC.messageresponse('@(Profile has been removed successfully)', exports.refresh));
+			});
+		};
+
+		exports.resend = function(row) {
+			SETTER('loading', 'show');
+			AJAX('GET /api/profiles/{id}/resend'.arg(row), function(response) {
+				SETTER('loading', 'hide', 1000);
+				if (response instanceof Array)
+					SETTER('snackbar', 'warning', response[0].error);
+				else {
+					SETR('profilesverify', { id: row.id, email: row.email, code: null });
+					SET('common.form', 'profilesverify');
+				}
+			});
+		};
+
+		if (NAV.query.url) {
+			SET('common.intro', 'profile');
+			WATCH('?.grid', function(path, value) {
+				if (value && value.items && value.items.length) {
+					var item = value.items.findItem('isconfirmed', true);
+					if (item)
+						location.href = NAV.query.url;
+				}
+			});
+		}
+
+		exports.modify = function(opt, next) {
+			next(true);
+		};
+	});
+</script>

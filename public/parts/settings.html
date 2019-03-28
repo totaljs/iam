@@ -1,0 +1,79 @@
+<h2><i class="fa fa-cog"></i>@(Settings)</h2>
+<br />
+<div class="row">
+	<div class="col-md-offset-3 col-md-6">
+		<div class="panel">
+			<label>@(Account settings)</label>
+			<div data-scope="settings">
+				<div class="padding npb">
+
+					<div class="alert hidden m" data-bind="NAV.query.password__show:value==='1'"><i class="fa fa-warning"></i>@(You have reseted a password and here you can change your login password.)</div>
+
+					<div data---="input__?.email__required:true;type:email" class="m">@(E-mail address)</div>
+					<div data---="input__?.phone" class="m">@(Phone number)</div>
+
+					<div class="row">
+						<div class="col-sm-6 m">
+							<div data---="input__?.language__innerlabel:true;required:true;dirsource:common.cl.languages;dirplaceholder:@(Search language)__null">@(Language)</div>
+						</div>
+						<div class="col-sm-6 m">
+							<div data---="input__?.dateformat__innerlabel:true;required:true;dirsource:common.cl.dateformats;dirsearch:false;direxclude:false__null">@(Date format)</div>
+						</div>
+					</div>
+					<div class="fs12 gray">@(Time format)</div>
+					<div data---="radiobutton__?.timeformat__items:12|@(12-hour clock),24|@(24-hour clock);required:true__24"></div>
+				</div>
+				<hr />
+				<div class="padding npt npb">
+
+					<div data---="checkbox__?.isnotify">@(Notify me when I'm logged)</div>
+					<div data---="checkbox__?.istwofactor__disabled:true" class="b">@(Enable two factor authorization)</div>
+					<div data---="checkbox__?.iscancel" class="b">@(Cancel all sessions when you sign-out)</div>
+					<div data---="checkbox__?.ispassword">@(Change password)</div>
+
+					<div data-bind="?.ispassword__show" class="hidden">
+						<hr />
+						<div data---="input__?.password__required:true;type:password;maxlength:30">@(Login password)</div>
+					</div>
+				</div>
+				<hr />
+				<div class="padding npt">
+					<div data---="validation__?">
+						<button class="button b exec" name="submit" data-exec="settings/submit" disabled><i class="fa fa-floppy-o"></i>@(SAVE)</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	PLUGIN('settings', function(exports) {
+
+		exports.reload = function() {
+			AJAX('GET /api/settings/', function(response) {
+				response.ispassword = NAV.query.password === '1';
+				SET('settings', response);
+			});
+		};
+
+		exports.submit = function() {
+			var model = GETR('?');
+			AJAX('POST /api/settings/', model, function(response) {
+
+				if (response instanceof Array) {
+					FUNC.messageresponse()(response);
+					return;
+				}
+
+				if (response.value) {
+					REPO.profilesverifytype = 'settings';
+					SET('profilesverify.email', model.email);
+					SET('common.form', 'profilesverify');
+				} else
+					FUNC.messageresponse('@(Settings have been changed successfully.)')(response);
+
+			});
+		};
+	});
+</script>

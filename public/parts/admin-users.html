@@ -1,0 +1,173 @@
+<div class="toolbar">
+	<label><i class="fa fa-plug orange"></i>@(All registered users)</label>
+</div>
+
+<div data---="table__adminusers.grid.items__detail:true;multiple:true;remember:true">
+
+	<script type="text/html" data-size="0,120px,60px">
+		<tr>
+			<td{{ if sa }} class="b"{{ fi }}><i class="fa fs11 fa-circle {{ if isonline }}green{{ else }}red{{ fi }} mr5"></i>{{ email }} {{ if isdeveloper }}<span class="badge badge-green">@(developer)</span>{{ fi }}{{ if isinactive }}<span class="badge badge-red">@(inactive)</span>{{ fi }}{{ if !isconfirmed }}<span class="badge badge-silver">@(unconfirmed)</span>{{ fi }}</td>
+			<td class="right fs11 gray">{{ dtcreated | time }}</td>
+			<td class="right"><span class="link exec black" data-exec="adminusers/menu" title="@(Options)"><i class="fa fa-cog"></i></span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+
+		<div class="row">
+			<div class="col-sm-6 m">
+				<div class="line">
+					<span>@(Email address)</span>
+					<div><a href="mailto:{{ email }}">{{ email }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Phone number)</span>
+					<div>{{ phone | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Profiles)</span>
+					<div>{{ countprofiles }}x</div>
+				</div>
+
+				<div class="line">
+					<span>@(Flags)</span>
+					<div>
+						{{ if isdeveloper }}<span class="badge badge-green">@(developer)</span>{{ fi }}
+						{{ if sa }}<span class="badge badge-red">@(sa)</span>{{ fi }}
+						{{ if isconfirmed }}<span class="badge badge-silver">@(confirmed)</span>{{ fi }}
+						{{ if isinactive }}<span class="badge badge-orange">@(inactive)</span>{{ fi }}
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-6 m">
+				<div class="line">
+					<span>@(Language)</span>
+					<div>{{ language | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Created)</span>
+					<div>{{ dtcreated | time | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Updated)</span>
+					<div>{{ dtcreated | time | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Logged)</span>
+					<div>{{ dtlogged | time | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Confirmed)</span>
+					<div>{{ dtconfirmed | time | def }}</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(No users in database)
+	</script>
+
+</div>
+
+<br />
+
+<div data---="importer__common.form__if:adminusersform;cleaner:5;url:/forms/app.html"></div>
+
+<script>
+	PLUGIN('adminusers', function(exports) {
+
+		exports.create = function() {
+			DEFAULT('usersform.*__{}');
+			SET('common.form', 'usersform');
+		};
+
+		exports.refresh = function() {
+			AJAX('GET /api/admin/users/', '?.grid');
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+
+		exports.menu = function(el, e) {
+			var row = adminusers.grid.items[+el.closest('tr').attrd('index')];
+			var opt = {};
+
+			opt.element = el;
+			opt.align = 'right';
+			opt.offsetY = -25;
+			opt.offsetX = 5;
+			opt.items = [];
+
+			opt.items.push({ id: 'active', name: row.isinactive ? '@(Active)' : '@(Inactive)', icon: row.isinactive ? 'play-circle green' : 'stop-circle red' });
+			opt.items.push({ id: 'developer', name: row.isdeveloper ? '@(Remove developer account)' : '@(Switch to developer)', icon: 'wrench' });
+			opt.items.push({ id: 'sa', name: row.isdeveloper ? '@(Remove SA)' : '@(Switch to SA)', icon: 'user-shield' });
+
+			if (!row.isconfirmed)
+				opt.items.push({ id: 'confirm', name: '@(Confirm)', icon: 'check-circle green' });
+
+			opt.items.push('-');
+			opt.items.push({ id: 'remove', name: '@(Remove)', icon: 'trash-o' });
+			opt.callback = function(val) {
+				exports.scope();
+				exports[val.id](row);
+			};
+
+			SETTER('menu', 'show', opt);
+		};
+
+		exports.remove = function(row) {
+			SETTER('confirm', 'show', '@(Are you sure you want to remove selected user <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+				!index && AJAX('DELETE /api/admin/users/{id}'.arg(row), exports.refresh);
+			});
+		};
+
+		exports.confirm = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/users/{id}/confirm/'.arg(row), exports.refresh);
+		};
+
+		exports.developer = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/users/{id}/developer/'.arg(row), exports.refresh);
+		};
+
+		exports.sa = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/users/{id}/sa/'.arg(row), exports.refresh);
+		};
+
+		exports.active = function(row) {
+			SETTER('loading', 'show');
+			SETTER('loading', 'hide', 1000);
+			AJAX('GET /api/admin/users/{id}/active/'.arg(row), exports.refresh);
+		};
+
+		exports.button = function(el) {
+			var index = +el.closest('tr').attrd('index');
+			var name = el.attrd('name');
+			var row = apps.grid.items[index];
+			if (name === 'remove') {
+				SETTER('confirm', 'show', '@(Are you sure you want to remove selected users <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+					!index && AJAX('DELETE /api/admin/users/{id}'.arg(row), exports.refresh);
+				});
+			}
+		};
+
+		exports.approve = function(el) {
+			var row = adminusers.grid.items.findItem('id', el.attrd('id'));
+			AJAX('GET /api/admin/users/{id}/approve/'.arg(row), exports.refresh);
+		};
+
+		exports.secret = function(el) {
+			var span = el.parent().find('span[data-secret]');
+			span.html(span.attrd('secret'));
+			el.remove();
+		};
+
+	});
+</script>

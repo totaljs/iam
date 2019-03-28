@@ -1,0 +1,268 @@
+@{title('@(Sign-in)')}
+
+<div class="centered">
+	<div class="centered-body">
+		<div class="maxwidth">
+			<div class="panel panel-shadow panel-animate" data-bind="null__exec:main/animate">
+				<div class="body">
+					<br />
+					<div class="center">
+						<a href="/"><img src="/img/logo.svg" border="0" width="200" alt="@{'%name'}" /></a>
+					</div>
+					<br />
+					<hr />
+
+					<!-- SIGN-IN -->
+					<div data-bind="common.page__show:value==='signin'" class="hidden">
+						<div class="row">
+							<div class="col-sm-6" data---="enter__formsignin__trigger:button">
+
+								<form method="POST" onsubmit="return false">
+									<div data---="input__formsignin.login__type:email;required:true;autofill:true;placeholder:@(Type email address)__'@'" class="m">@(Email address)</div>
+									<div data---="input__formsignin.password__type:password;required:true;autofill:true;placeholder:@(Type password)__''" class="m">@(Password)</div>
+								</form>
+
+								<div data---="error__formsignin.response"></div>
+								<div data---="validation__formsignin">
+									<button name="submit" class="button exec" data-exec="main/login" disabled><i class="fa fa-lock"></i>@(Sign-in)</button>
+								</div>
+
+								<div class="fs12">
+									<hr />
+									<div><span class="link" data-bind="null__click:main/signup"><i class="fa fa-caret-right"></i> @(Not a member? <b>Sign up</b>)</span></div>
+									<div><span class="link" data-bind="null__click:main/password"><i class="fa fa-caret-right"></i> @(Reset password)</span></div>
+									<div><span class="link" data-bind="null__click:main/resend"><i class="fa fa-caret-right"></i> @(Re-send verification)</span></div>
+									<!--
+									<hr />
+									<div><span class="link"><i class="fa fa-caret-right"></i> @(Terms & Conditions)</span></div>
+									<div><span class="link"><i class="fa fa-caret-right"></i> @(Privacy policy)</span></div>
+									<div><span class="link"><i class="fa fa-caret-right"></i> @(Contact)</span></div>
+									-->
+								</div>
+
+							</div>
+							<div class="col-sm-6 m">
+
+								<div class="visible-xs">
+									<hr />
+								</div>
+
+								<br class="hidden-xs" />
+								@{foreach m in model}
+								<a href="/login/@{m.id}/" class="linksocial" style="background-color:@{m.color}"><i class="fab fa-@{m.id}"></i><span><b>@{m.name}</b></span></a>
+								@{end}
+							</div>
+						</div>
+					</div>
+
+					<!-- SIGN-UP -->
+					<div data-bind="common.page__show:value==='signup'" class="hidden">
+						<div class="center">
+							<h2>@(Create a new account)</h2>
+							<div class="help m">@(OpenSocial is the NextGen social network for everyone)</div>
+						</div>
+						<br />
+						<div class="row" data-scope="formsignup">
+							<div class="col-sm-10 col-sm-offset-1">
+								<div class="row">
+									<div class="col-sm-6 m">
+										<div data---="input__?.email__type:email;required:true__'@'">@(Email address)</div>
+										<div class="help">@(We will send you a confirmation email.)</div>
+									</div>
+									<div class="col-sm-6 m">
+										<div data---="input__?.phone__type:phone;required:true;placeholder:+421903163302__''">@(Phone number)</div>
+										<div class="help">@(Type an international format)</div>
+									</div>
+								</div>
+								<hr class="nmt" />
+								<div class="row">
+									<div class="col-sm-6 m">
+										<div data---="input__?.password__type:password;required:true__''" class="m">@(Password)</div>
+									</div>
+									<div class="col-sm-6 m">
+										<div data---="input__?.passwordagain__type:password;required:true__''" class="m">@(Password again)</div>
+									</div>
+								</div>
+
+								<div data---="checkbox__?.terms__null__false">@(I agree with <b>Terms &amp; Conditions</b>)</div>
+								<div data---="checkbox__?.privacy__null__false">@(I agree with <b>Privacy Policy</b>)</div>
+								<br />
+
+								<div data---="error__?.response"></div>
+
+								<div data---="validation__?" class="m">
+									<button name="submit" class="button exec" data-exec="main/signup_submit" disabled><i class="fa fa-unlock"></i>@(Sign-up)</button>
+									<div class="help"><span class="link" data-bind="null__click:main/signin"><i class="fa fa-chevron-left"></i>@(<b>Cancel</b> and go back)</span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div data-bind="common.page__show:value==='verify'" class="hidden">
+						<div data-scope="formverify" class="padding">
+							<div data---="enter__?__trigger:button">
+								<br />
+								<div class="center">
+									<div class="m"><i class="far fa-check-circle green fa-5x"></i></div>
+									<div class="gray m">@(Type a confirmation code for <b data-bind="?.email__text"></b>)</div>
+									<div data---="pin__?.code__count:4;required:true__''" class="m"></div>
+									<div data---="error__?.response" class="m"></div>
+								</div>
+								<div data---="validation__?" class="m maxwidth2">
+									<button name="submit" class="button exec" data-exec="main/verify" disabled><i class="fa fa-check-circle"></i>@(Verify account)</button>
+									<div class="help"><span class="link" data-bind="null__click:main/signin"><i class="fa fa-chevron-left"></i>@(<b>Cancel</b> and go back)</span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div data-bind="common.page__show:value==='resend'" class="hidden">
+						<div data-scope="formresend" class="padding maxwidth2">
+							<div data---="enter__?__trigger:button">
+								<br />
+								<div class="center">
+									<div class="m"><i class="fa fa-envelope-o color fa-5x"></i></div>
+									<br />
+								</div>
+								<div data---="input__?.email__required:true;type:email__'@'" class="m">@(Email address)</div>
+								<div data---="error__?.response" class="m"></div>
+								<div data---="validation__?" class="m">
+									<button name="submit" class="button exec" data-exec="main/resend_submit" disabled><i class="fa fa-check-circle"></i>@(Send code)</button>
+									<div class="help"><span class="link" data-bind="null__click:main/signin"><i class="fa fa-chevron-left"></i>@(<b>Cancel</b> and go back)</span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div data-bind="common.page__show:value==='password'" class="hidden">
+						<div data-scope="formpassword" class="padding maxwidth2">
+							<div data---="enter__?__trigger:button">
+								<br />
+								<div class="center">
+									<div class="m"><i class="fa fa-lock color fa-5x"></i></div>
+									<br />
+								</div>
+								<div data---="input__?.email__required:true;type:email__'@'" class="m">@(Email address)</div>
+								<div data---="error__?.response" class="m"></div>
+								<div data---="validation__?" class="m">
+									<button name="submit" class="button exec" data-exec="main/password_submit" disabled><i class="fa fa-lock"></i>@(Reset password)</button>
+									<div class="help"><span class="link" data-bind="null__click:main/signin"><i class="fa fa-chevron-left"></i>@(<b>Cancel</b> and go back)</span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+	var common = { page: 'signin' };
+
+	PLUGIN('main', function(exports) {
+
+		setTimeout(function() {
+			NAV.query.url && !isPRIVATEMODE && localStorage.setItem('redirect', NAV.query.url);
+		}, 1000);
+
+		exports.animate = function(path, val, el) {
+			setTimeout(function() {
+				el.rclass('panel-animate');
+			}, 500);
+		};
+
+		exports.signin = function() {
+			DEFAULT('formsignin__{}');
+			SET('common.page', 'signin');
+		};
+
+		exports.signup = function() {
+			DEFAULT('formsignup__{}');
+			SET('common.page', 'signup');
+			document.body.scrollTop = 0;
+		};
+
+		exports.password = function() {
+			DEFAULT('formpassword__{}');
+			SET('common.page', 'password');
+			document.body.scrollTop = 0;
+		};
+
+		exports.resend = function() {
+			DEFAULT('formresend__{}');
+			SET('common.page', 'resend');
+			document.body.scrollTop = 0;
+		};
+
+		exports.login = function() {
+			var path = 'formsignin';
+			SETTER('loading', 'show');
+			AJAX('POST /api/users/login/', GETR(path), function(response) {
+				SETTER('loading', 'hide', 1000);
+				SET(path + '.response', response);
+				if (response.success)
+					location.href = NAV.query.url || '/';
+			});
+		};
+
+		exports.verify = function() {
+			var path = 'formverify';
+			var model = GETR(path);
+			SETTER('loading', 'show');
+			AJAX(('GET /api/users/{id}/verify' + (model.type === 'password' ? '/password' : '') + '/?code={code}').arg(model), function(response) {
+				SETTER('loading', 'hide', 1000);
+				SET(path + '.response', response);
+				if (response.success)
+					location.href = model.type === 'password' ? '/settings/?password=1' : (NAV.query.url || '/');
+			});
+		};
+
+		exports.resend_submit = function() {
+			var path = 'formresend';
+			SETTER('loading', 'show');
+			AJAX('POST /api/users/resend/', GETR(path), function(response) {
+				SETTER('loading', 'hide', 1000);
+				SET(path + '.response', response);
+				if (response.success) {
+					SETR('formverify', { id: response.value, email: formresend.email, code: '' });
+					SET('common.page', 'verify');
+				}
+			});
+		};
+
+		exports.password_submit = function() {
+			var path = 'formpassword';
+			SETTER('loading', 'show');
+			AJAX('POST /api/users/password/', GETR(path), function(response) {
+				SETTER('loading', 'hide', 1000);
+				SET(path + '.response', response);
+				if (response.success) {
+					SETR('formverify', { id: response.value, email: formpassword.email, code: '', type: 'password' });
+					SET('common.page', 'verify');
+				}
+			});
+		};
+
+		exports.signup_submit = function() {
+			var path = 'formsignup';
+			SETTER('loading', 'show');
+			AJAX('POST /api/users/create/', GETR(path), function(response) {
+
+				SETTER('loading', 'hide', 1000);
+
+				// A problem
+				if (response instanceof Array) {
+					SET(path + '.response', response);
+					return;
+				}
+
+				SETR('formverify', { id: response.value, email: formsignup.email, code: '' });
+				SET('common.page', 'verify');
+
+			});
+		};
+	});
+
+</script>

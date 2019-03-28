@@ -1,0 +1,64 @@
+<div data---="modal__common.form__if:profilesverify;width:400;reload:profilesverify/reload;submit:profilesverify/submit;enter:true;center:true;icon:check-circle green;title:@(Verify profile)" class="hidden">
+
+	<div>
+		<span class="link cancel"><i class="fa fa-times"></i></span>
+		<label></label>
+	</div>
+
+	<div data-scope="profilesverify" class="padding">
+		<br />
+		<div class="center">
+			<div class="m"><i class="far fa-check-circle green fa-5x"></i></div>
+			<div class="gray m">@(Type a confirmation code for <b data-bind="?.email__text"></b>)</div>
+			<div data---="pin__?.code__count:4;required:true__''"></div>
+			<div data---="error__?.response"></div>
+		</div>
+		<br />
+	</div>
+
+	<div data---="validation__profilesverify">
+		<span class="link cancel">@(Cancel)</span>
+		<button name="submit" disabled>@(VERIFY)</button>
+	</div>
+
+</div>
+
+<script>
+
+	PLUGIN('profilesverify', function(exports) {
+
+		exports.reload = function() {
+			DEFAULT('?.code');
+		};
+
+		exports.submit = function(hide) {
+
+			var model = GETR('?');
+
+			if (model.id == null)
+				model.id = '0';
+
+			var type = REPO.profilesverifytype || 'profiles';
+			var url;
+
+			if (type === 'profiles')
+				url = 'GET /api/profiles/{id}/verify/?code={code}';
+			else
+				url = 'GET /api/settings/verify/?code={code}';
+
+			AJAX(url.arg(model), function(response) {
+				if (response.success) {
+					if (type === 'profiles') {
+						EXEC('profiles/refresh');
+						SETTER('message', 'success', '@(Your profile has been confirmed successfully.)');
+					} else
+						SETTER('message', 'success', '@(Your email has been confirmed successfully.)');
+					hide();
+					REPO.profilesverifytype = null;
+				}
+			});
+		};
+
+	});
+
+</script>

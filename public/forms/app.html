@@ -1,0 +1,117 @@
+<div data---="modal__common.form__if:appsform;width:600;submit:appsform/submit;icon:box;reload:appsform/reload" class="hidden">
+
+	<div>
+		<span class="link cancel"><i class="fa fa-times"></i></span>
+		<label></label>
+	</div>
+
+	<div data-scope="appsform">
+
+		<div class="bg-smoke">
+			<div class="padding npb">
+				<div class="row">
+					<div class="col-sm-6 m">
+						<div data---="input__?.name__innerlabel:true;required:true;maxlength:50__''">@(Name)</div>
+					</div>
+					<div class="col-sm-6 m">
+						<div data---="input__?.author__innerlabel:true;required:true;maxlength:50__''">@(Author)</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-6 m">
+						<div data---="input__?.email__innerlabel:true;required:true;type:email__null">@(Email address)</div>
+					</div>
+					<div class="col-sm-6 m">
+						<div data---="input__?.phone__innerlabel:true__null">@(Phone number)</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="padding npb">
+
+			<div data---="input__?.description__required:true;innerlabel:true__''">@(Description)</div>
+			<div class="help m"><i class="fa fa-question-circle"></i>@(Describe your application)</div>
+			<div data---="input__?.url__required:true;innerlabel:true__''" class="m">@(Application URL)</div>
+			<div data---="checkbox__?.isdisabled__null__false">@(Application is currently disabled)</div>
+			<hr />
+
+			<div class="row">
+				<div class="col-sm-8 m">
+					<div class="ui-label required">@(Required fields):</div>
+					<div data---="selectbox__?.fields__required:true;height:200;search:@(Search fields);items:@(Nick)|nick,@(Photo)|photo,@(Firstname)|firstname,@(Lastname)|lastname,@(Email address)|email,@(Phone number)|phone,@(Gender)|gender,@(Website)|url,@(Company)|company,@(Position)|position,@(Address)|address,@(City)|city,@(Zip)|zip,@(Country)|country,@(State)|state,@(Date birth)|dtbirth__''"></div>
+					<div class="help"><i class="fa fa-keyboard-o"></i>@(Select fields which you need for your application)</div>
+				</div>
+				<div class="col-sm-4 m">
+					<div data---="preview__?.icon__width:300;height:300;icon:camera;url:/api/upload/base64/__null" class="b">@(Icon)</div>
+					<div class="help">@(Upload icon with the fixed size 300x300 pixels)</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="padding npb bg-smoke">
+			<div class="row">
+				<div class="col-sm-6 m">
+					<div data---="input__?.urlprivacy__required:true;maxlength:300__'https://'">@(Privacy Policy URL)</div>
+				</div>
+				<div class="col-sm-6 m">
+					<div data---="input__?.urlterms__required:true;maxlength:300__'https://'">@(Terms &amp; Conditions URL)</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-6 m">
+					<div data---="input__?.urlcallback__required:true;maxlength:300__'https://'">@(Callback URL)</div>
+				</div>
+				<div class="col-sm-6 m">
+					<div data---="input__?.urlremove__required:true;maxlength:300__'https://'">@(Remove URL)</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-6 m">
+					<div data---="input__?.urlupdate__maxlength:300__'https://'">@(Update URL)</div>
+				</div>
+				<div class="col-sm-6 m">
+					<div data---="input__?.urllogout__maxlength:300__'https://'">@(Logout URL)</div>
+				</div>
+			</div>
+		</div>
+		<div data---="error__?.response"></div>
+	</div>
+
+	<div data---="validation__appsform">
+		<span class="link cancel">@(Cancel)</span>
+		<button name="submit" disabled><i class="fa fa-floppy-o"></i>@(SAVE)</button>
+	</div>
+
+</div>
+
+<script>
+
+	PLUGIN('appsform', function(exports) {
+
+		exports.reload = function(com) {
+			var model = GETR('?');
+			com.reconfigure({ title: model.id ? '@(Update app)' : '@(Add app)' });
+		};
+
+		exports.submit = function(hide) {
+			var model = CLONE(GETR('?'));
+
+			if (model.id == null)
+				model.id = '';
+
+			model.fields = model.fields.join(',');
+
+			AJAX('POST /api/apps/{id}'.arg(model), model, function(response) {
+				if (response.success) {
+					EXEC('apps/refresh');
+					hide();
+				} else
+					FUNC.messageresponse('')(response);
+			});
+		};
+
+	});
+
+</script>

@@ -1,0 +1,134 @@
+<div class="toolbar">
+	<div class="pull-right">
+		<button class="exec" data-exec="apps/create"><i class="fa fa-plus-circle"></i>@(Register app)</button>
+	</div>
+	<label><i class="fa fa-rocket orange"></i>@(My apps)</label>
+</div>
+
+<div data---="table__apps.grid.items__detail:true;multiple:true;remember:true">
+
+	<script type="text/html" data-size="0,120px">
+		<tr>
+			<td>{{ if icon }}<i class="fa fa-camera mr5"></i>{{ fi }}{{ name }} {{ if !isconfirmed }}<span class="badge badge-gray"><i class="fa fa-spin fa-spinner"></i>@(approving)</span>{{ fi }}{{ if isdisabled }}<span class="badge badge-red">@(disabled)</span>{{ fi }}</td>
+			<td class="right fs11"><span class="link exec gray" data-exec="apps/update">@(edit)</span><i class="separator"></i><span class="link exec black mr5" data-exec="apps/menu" title="@(Options)"><i class="fa fa-cog"></i></span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+		<div class="row">
+			<div class="col-sm-2 m hidden-xs">
+				<img src="{{ if icon }}{{ icon }}{{ else }}/img/empty.png{{ fi }}" alt="{{ name }}" border="0" class="img-responsive img-rounded" />
+			</div>
+			<div class="col-sm-10 m">
+				<div class="line">
+					<span>@(Description)</span>
+					<div>{{ description }}</div>
+				</div>
+				<div class="line">
+					<span>@(Author)</span>
+					<div>{{ author }}</div>
+				</div>
+				<div class="line">
+					<span>@(Email address)</span>
+					<div><a href="mailto:{{ email }}">{{ email }}</a></div>
+				</div>
+				<div class="line">
+					<span>@(Phone number)</span>
+					<div>{{ phone | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(URL)</span>
+					<div><a href="{{ url }}" target="_blank">{{ url }}</a></div>
+				</div>
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-sm-10 col-sm-offset-2">
+				<div class="line">
+					<span>@(Client ID)</span>
+					<div class="monospace b">{{ client_id }}</div>
+				</div>
+				<div class="line">
+					<span>@(Client secret)</span>
+					<div><span class="monospace b mr5" data-secret="{{ client_secret }}">****************************</span> <span class="link fs11 exec" data-exec="apps/secret"><i class="fa fa-eye mr5"></i>@(Show key)</span></div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(You don't have defined any app)
+	</script>
+
+</div>
+
+<br />
+
+<div data---="importer__common.form__if:appsform;cleaner:5;url:/forms/app.html"></div>
+
+<script>
+	PLUGIN('apps', function(exports) {
+
+		exports.create = function() {
+			DEFAULT('appsform.*__{}');
+			SET('common.form', 'appsform');
+		};
+
+		exports.refresh = function() {
+			AJAX('GET /api/apps/', '?.grid');
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+
+		exports.menu = function(el, e) {
+			var row = apps.grid.items[+el.closest('tr').attrd('index')];
+			var opt = {};
+
+			opt.element = el;
+			opt.align = 'right';
+			opt.offsetY = -25;
+			opt.offsetX = 5;
+			opt.items = [];
+
+			opt.items.push({ id: 'update', name: '@(Edit application)', icon: 'pencil' });
+			opt.items.push('-');
+			opt.items.push({ id: 'remove', name: '@(Remove)', icon: 'trash-o' });
+			opt.callback = function(val) {
+				exports.scope();
+				exports[val.id](row);
+			};
+
+			SETTER('menu', 'show', opt);
+
+			e.stopPropagation();
+			e.preventDefault();
+		};
+
+		exports.update = function(row) {
+
+			if (row instanceof jQuery)
+				row = apps.grid.items[+row.closest('tr').attrd('index')];
+
+			AJAX('GET /api/apps/{id}'.arg(row), function(response) {
+				response.fields = response.fields.split(',').trim();
+				SETR('appsform', response);
+				SET('common.form', 'appsform');
+			});
+		};
+
+		exports.remove = function(row) {
+			SETTER('confirm', 'show', '@(Are you sure you want to remove selected app <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+				!index && AJAX('DELETE /api/apps/{id}'.arg(row), FUNC.messageresponse('@(Application has been removed successfully)', exports.refresh));
+			});
+		};
+
+		exports.secret = function(el) {
+			var span = el.parent().find('span[data-secret]');
+			span.html(span.attrd('secret'));
+			el.remove();
+		};
+	});
+</script>

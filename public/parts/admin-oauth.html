@@ -1,0 +1,67 @@
+<div class="toolbar">
+	<label><i class="fa fa-plug orange"></i>@(OAuth 2.0 providers)</label>
+</div>
+
+
+<div data---="table__!adminoauth.grid__detail:true;multiple:true;remember:true">
+
+	<script type="text/html" data-size="0,120px,80px" data-head="@(Provider name),@(Used)," data-align="0,2,2">
+		<tr>
+			<td><i class="fa fs11 fa-circle {{ if isdisabled }}red{{ else }}green{{ fi }} mr5"></i>{{ name }}</td>
+			<td class="right">{{ dtused | time | def }}</td>
+			<td class="right fs11"><span class="link exec {{ if isdisabled }}b red{{ else }}silver{{ fi }}" data-exec="adminoauth/toggle">{{ if isdisabled }}@(enabled){{ else }}@(disabled){{ fi }}</span></td>
+		</tr>
+	</script>
+
+	<script type="text/html" data-type="detail">
+		<div data-scope="adminoauth.grid[{{ $.index }}]">
+			<div data---="editable__?">
+				<div class="line">
+					<span>@(Client ID)</span>
+					<div class="monospace b editable" data-editable="path:client_id">{{ client_id | def }}</div>
+				</div>
+				<div class="line">
+					<span>@(Client secret)</span>
+					<div class="monospace b editable" data-editable="path:client_secret">{{ client_secret | def }}</div>
+				</div>
+			</div>
+			<div class="lineop mt10" data---="validation__?">
+				<button name="submit" class="button button-small exec" data-exec="adminoauth/save" data-index="{{ $.index }}" disabled><i class="fa fa-floppy-o"></i>@(Update)</button>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" data-type="empty">
+		<i class="fa fa-database"></i> @(No OAuth 2.0 providers in database)
+	</script>
+
+</div>
+
+<br />
+
+<script>
+	PLUGIN('adminoauth', function(exports) {
+
+		exports.refresh = function() {
+			AJAX('GET /api/admin/oauth/', '?.grid');
+		};
+
+		exports.toggle = function(el) {
+			var index = +el.closest('tr').attrd('index');
+			var row = GET('?.grid')[index];
+			AJAX('GET /api/admin/oauth/{id}/toggle'.arg(row), exports.refresh);
+			exports.scope();
+		};
+
+		exports.save = function(el) {
+			var scope = el.scope();
+			var row = scope.get();
+			scope.reset();
+			AJAX('POST /api/admin/oauth/{id}'.arg(row), row, FUNC.messageresponse('@(Credentials have been updated successfully.)'));
+		};
+
+		exports.reload = function() {
+			exports.refresh();
+		};
+	});
+</script>
