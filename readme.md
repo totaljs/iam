@@ -4,6 +4,8 @@
 
 ![IAM called OpenSocial](http://cdn.totaljs.com/images/iam.png)
 
+---
+
 - [Homepage](https://www.totaljs.com/iam/)
 - MIT license
 
